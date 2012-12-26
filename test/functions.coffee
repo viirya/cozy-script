@@ -24,7 +24,14 @@ ok y.x() is 3
 # The empty function should not cause a syntax error.
 ->
 () ->
+ 
+# The empty backcall function should not cause a syntax error.
+<-
+() <-
 
+<~
+() <~
+ 
 # Multiple nested function declarations mixed with implicit calls should not
 # cause a syntax error.
 (one) -> (two) -> three four, (five) -> six seven, eight, (nine) ->

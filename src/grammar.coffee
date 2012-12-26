@@ -89,6 +89,7 @@ grammar =
     o 'Value'
     o 'Invocation'
     o 'Code'
+    o 'BackCallCode'
     o 'Operation'
     o 'Assign'
     o 'If'
@@ -173,14 +174,29 @@ grammar =
     o 'PARAM_START ParamList PARAM_END FuncGlyph Block', -> new Code $2, $5, $4
     o 'FuncGlyph Block',                        -> new Code [], $2, $1
   ]
-
+ 
+  # The **BackCallCode** node is the function literal. It's defined by an indented block
+  # of **Block** preceded by a function back arrow, with an optional parameter
+  # list.
+  BackCallCode: [
+    o 'PARAM_START ParamList PARAM_END BackCallFuncGlyph Block', -> new Code $2, $5, $4
+    o 'BackCallFuncGlyph Block',                        -> new Code [], $2, $1
+  ]
+ 
   # CoffeeScript has two different symbols for functions. `->` is for ordinary
   # functions, and `=>` is for functions bound to the current value of *this*.
   FuncGlyph: [
     o '->',                                     -> 'func'
     o '=>',                                     -> 'boundfunc'
   ]
-
+ 
+  # Define two symbols for backcall functions. `<-` is for ordinary backcall functions,
+  # and `<=` is for backcall functions bound to the current value of *this*.
+  BackCallFuncGlyph: [
+    o '<-',                                     -> 'func'
+    o '<~',                                     -> 'boundfunc'
+  ]
+ 
   # An optional, trailing comma.
   OptComma: [
     o ''
