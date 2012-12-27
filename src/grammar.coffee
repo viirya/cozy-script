@@ -176,11 +176,11 @@ grammar =
   ]
  
   # The **BackCallCode** node is the function literal. It's defined by an indented block
-  # of **Block** preceded by a function back arrow, with an optional parameter
+  # of **Block** preceded by a function back arrow and an invocation, with an optional parameter
   # list.
   BackCallCode: [
-    o 'PARAM_START ParamList PARAM_END BackCallFuncGlyph Block', -> new Code $2, $5, $4
-    o 'BackCallFuncGlyph Block',                        -> new Code [], $2, $1
+    o 'PARAM_START ParamList PARAM_END BackCallFuncGlyph Invocation Block', -> new BackCall $5, new Code($2, $6, $4) 
+    o 'BackCallFuncGlyph Invocation Block',                                 -> new BackCall $2, new Code([], $3, $1)
   ]
  
   # CoffeeScript has two different symbols for functions. `->` is for ordinary
@@ -309,10 +309,10 @@ grammar =
 
   # Ordinary function invocation, or a chained series of calls.
   Invocation: [
-    o 'Value OptFuncExist Arguments',           -> new Call $1, $3, $2
-    o 'Invocation OptFuncExist Arguments',      -> new Call $1, $3, $2
-    o 'SUPER',                                  -> new Call 'super', [new Splat new Literal 'arguments']
-    o 'SUPER Arguments',                        -> new Call 'super', $2
+    o 'Value OptFuncExist Arguments',                   -> new Call $1, $3, $2
+    o 'Invocation OptFuncExist Arguments',              -> new Call $1, $3, $2
+    o 'SUPER',                                          -> new Call 'super', [new Splat new Literal 'arguments']
+    o 'SUPER Arguments',                                -> new Call 'super', $2
   ]
 
   # An optional existence check on a function.

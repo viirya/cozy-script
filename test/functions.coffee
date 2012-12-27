@@ -25,12 +25,26 @@ ok y.x() is 3
 ->
 () ->
  
-# The empty backcall function should not cause a syntax error.
-<-
-() <-
+# The backcall function call syntax.
 
-<~
-() <~
+<- $ 1, 2, _
+  console.log('test')
+
+(x) <- $ 1, _, 2
+  console.log('test')
+
+<- $()
+  console.log('test')
+
+phantom = require "phantom"
+(ph) <- phantom.create()
+  (page) <- ph.createpage()
+    (status) <- page.open google
+      console.log "opened google? #{status}"
+      page.evaluate (-> document.title), (it) ->
+        console.log "page title is #{it}"
+        ph.exit
+
  
 # Multiple nested function declarations mixed with implicit calls should not
 # cause a syntax error.

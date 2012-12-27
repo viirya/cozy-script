@@ -559,6 +559,19 @@ exports.Call = class Call extends Base
       ifn = unfoldSoak o, call, 'variable'
     ifn
 
+  filterImplicitBackCall: (backcall) ->
+    nodes = []
+    findIt = false
+    for node in @args
+      if node instanceof Value and node.base instanceof Literal and node.base.value is '_'
+        nodes.push backcall
+        findIt = true
+      else  
+        nodes.push node
+    if not findIt
+        nodes.push backcall
+    @args = nodes
+
   # Walk through the objects in the arguments, moving over simple values.
   # This allows syntax like `call a: b, c` into `call({a: b}, c);`
   filterImplicitObjects: (list) ->
@@ -622,7 +635,32 @@ exports.Call = class Call extends Base
       else
         ref = 'null'
     "#{fun}.apply(#{ref}, #{splatArgs})"
+ 
+#### BackCall
 
+# Node for a function invocation with a backcall argument.
+exports.BackCall = class BackCall extends Base
+  constructor: (@call, @backcall) ->
+
+  children: ['call', 'backcall']
+
+  # Compile a vanilla function call with a backcall argument.
+  compileNode: (o) ->
+    @call.filterImplicitBackCall(@backcall)
+    @call.compileNode(o)
+
+  # `super()` is converted into a call against the superclass's implementation
+  # of the current function.
+  compileSuper: (args, o) ->
+    @call.compileSuper(args, o)
+
+  # If you call a function with a splat, it's converted into a JavaScript
+  # `.apply()` call to allow an array of arguments to be passed.
+  # If it's a constructor, then things get real tricky. We have to inject an
+  # inner constructor in order to be able to pass the varargs.
+  compileSplat: (o, splatArgs) ->
+    @call.compileSplat(o, splatArgs)  
+ 
 #### Extends
 
 # Node to extend an object's prototype with an ancestor object.
