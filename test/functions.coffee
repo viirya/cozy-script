@@ -27,24 +27,32 @@ ok y.x() is 3
  
 # The backcall function call syntax.
 
-<- $ 1, 2, _
+func = (one, two, three) -> one: one, two: two
+func_one = (one) ->
+
+<- func 1, 2, _
   console.log('test')
 
-(x) <- $ 1, _, 2
+(x) <- func 1, _, 2
   console.log('test')
 
-<- $()
+<- func_one()
   console.log('test')
 
-phantom = require "phantom"
-(ph) <- phantom.create()
-  (page) <- ph.createpage()
-    (status) <- page.open google
-      console.log "opened google? #{status}"
-      page.evaluate (-> document.title), (it) ->
-        console.log "page title is #{it}"
-        ph.exit
+happy = true
 
+if happy
+  x
+else
+  y
+
+# implicit function call
+
+func()
+func!
+
+func().two
+func!.two
  
 # Multiple nested function declarations mixed with implicit calls should not
 # cause a syntax error.

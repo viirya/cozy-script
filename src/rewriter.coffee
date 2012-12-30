@@ -182,12 +182,19 @@ class exports.Rewriter
       noCall      = no if tag in LINEBREAKS
       token.call  = yes if prev and not prev.spaced and tag is '?'
       return 1 if token.fromThen
-      return 1 unless callObject or
-        prev?.spaced and (prev.call or prev[0] in IMPLICIT_FUNC) and
+      return 1 unless callObject or 
+        (prev?.spaced or tag is '!') and (prev.call or prev[0] in IMPLICIT_FUNC) and
         (tag in IMPLICIT_CALL or not (token.spaced or token.newLine) and tag in IMPLICIT_UNSPACED_CALL)
-      tokens.splice i, 0, @generate 'CALL_START', '(', token[2]
-      @detectEnd i + 1, condition, action
+      if tag is '!'
+        tokens.splice i, 1, @generate 'CALL_START', '(', token[2]
+        tokens.splice i + 1, 0, @generate 'CALL_END', ')', token[2]
+        if next[0] is 'IDENTIFIER' then tokens.splice i + 2, 0, @generate '.', '.', token[2]
+      else
+        tokens.splice i, 0, @generate 'CALL_START', '(', token[2]
+        @detectEnd i + 1, condition, action
       prev[0] = 'FUNC_EXIST' if prev[0] is '?'
+      if tag is '!'
+        return 2
       2
 
   # Because our grammar is LALR(1), it can't handle some single-line
@@ -298,7 +305,7 @@ IMPLICIT_FUNC    = ['IDENTIFIER', 'SUPER', ')', 'CALL_END', ']', 'INDEX_END', '@
 IMPLICIT_CALL    = [
   'IDENTIFIER', 'NUMBER', 'STRING', 'JS', 'REGEX', 'NEW', 'PARAM_START', 'CLASS'
   'IF', 'TRY', 'SWITCH', 'THIS', 'BOOL', 'NULL', 'UNDEFINED', 'UNARY', 'SUPER'
-  '@', '->', '=>', '[', '(', '{', '--', '++'
+  '@', '->', '=>', '[', '(', '{', '--', '++', '!'
 ]
 
 IMPLICIT_UNSPACED_CALL = ['+', '-']

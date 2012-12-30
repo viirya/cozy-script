@@ -302,7 +302,7 @@ exports.Lexer = class Lexer
         @token 'OUTDENT', dent
     @outdebt -= moveOut if dent
     @tokens.pop() while @value() is ';'
-    @token 'TERMINATOR', '\n' unless @tag() is 'TERMINATOR' or noNewlines
+    @token 'TERMINATOR', '\n' unless @tag() is 'TERMINATOR' or (noNewlines and @tag() isnt '!')
     this
 
   # Matches and consumes non-meaningful whitespace. Tag the previous token
@@ -352,7 +352,8 @@ exports.Lexer = class Lexer
     else if value in MATH            then tag = 'MATH'
     else if value in COMPARE         then tag = 'COMPARE'
     else if value in COMPOUND_ASSIGN then tag = 'COMPOUND_ASSIGN'
-    else if value in UNARY           then tag = 'UNARY'
+    else if value is '!' and (!prev or (prev.spaced or prev[0] isnt 'IDENTIFIER')) then tag = 'UNARY'
+    else if value in UNARY and value isnt '!'          then tag = 'UNARY'
     else if value in SHIFT           then tag = 'SHIFT'
     else if value in LOGIC or value is '?' and prev?.spaced then tag = 'LOGIC'
     else if prev and not prev.spaced
@@ -616,6 +617,7 @@ OPERATOR   = /// ^ (
    | ([-+:])\1         # doubles
    | ([&|<>])\2=?      # logic / shift
    | \?\.              # soak access
+   | \!                # implict function call
    | \.{2,3}           # range or splat
 ) ///
 
