@@ -1,7 +1,7 @@
-
 # CozyScript
 
-CozyScript is a fork of CoffeeScript. It currently adds the syntax of backcall function.
+CozyScript is a fork of CoffeeScript. It currently adds some features from the descendants of CoffeeScript
+such as LiveScript. Those features include backcall function, implicit function call.
 
 ## Backcall examples
 
@@ -57,3 +57,54 @@ CozyScript is a fork of CoffeeScript. It currently adds the syntax of backcall f
         });
       });
     });
+
+## Implicit function call
+
+-- CozyScript --
+
+    func = (one, two, three) -> one: '1', two: '2'
+
+    func()
+    func!
+
+    eq func().two, '2'
+    eq func!.two, '2'
+
+    func_array = -> [1, 2, 3]
+
+    eq func_array()[0], 1
+    eq func_array![0], 1
+
+-- Compile to JavaScript --
+
+    func = function(one, two, three) {
+        return {
+            one: '1',
+            two: '2'
+        };
+    };
+    
+    func();
+
+    func();
+
+    eq(func().two, '2');
+
+    eq(func().two, '2');
+
+    func_array = function() {
+        return [1, 2, 3];
+    };
+
+    eq(func_array()[0], 1);
+
+    eq(func_array()[0], 1);
+
+
+    
+
+
+
+
+
+
