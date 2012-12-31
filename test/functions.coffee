@@ -27,8 +27,8 @@ ok y.x() is 3
  
 # The backcall function call syntax.
 
-func = (one, two, three) -> one: one, two: two
-func_one = (one) ->
+func = (one, two, three) -> one: '1', two: '2'
+func_one = (one) -> 1
 
 <- func 1, 2, _
   console.log('test')
@@ -39,21 +39,19 @@ func_one = (one) ->
 <- func_one()
   console.log('test')
 
-happy = true
-
-if happy
-  x
-else
-  y
-
 # implicit function call
 
 func()
 func!
 
-func().two
-func!.two
- 
+eq func().two, '2'
+eq func!.two, '2'
+
+func_array = -> [1, 2, 3]
+eq func_array()[0], 1
+eq func_array![0], 1
+
+
 # Multiple nested function declarations mixed with implicit calls should not
 # cause a syntax error.
 (one) -> (two) -> three four, (five) -> six seven, eight, (nine) ->
