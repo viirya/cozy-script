@@ -16,6 +16,17 @@ such as LiveScript. Those features include backcall function, implicit function 
     <- $()
       console.log('test')
 
+    x <- func 1, _, 2
+      console.log('test')
+
+    <- func_one()
+      console.log('test')
+
+      x <- func 1, _, 2
+        console.log('test')
+
+
+
     phantom = require "phantom"
       (ph) <- phantom.create()
         (page) <- ph.createpage()
@@ -39,6 +50,17 @@ such as LiveScript. Those features include backcall function, implicit function 
 
     $(function() {
       return console.log('test');
+    });
+
+    func(1, function(x) {
+      return console.log('test');
+    }, 2);
+
+    func_one(function() {
+      console.log('test');
+      return func(1, function(x) {
+        return console.log('test');
+      }, 2);
     });
 
     var phantom;
