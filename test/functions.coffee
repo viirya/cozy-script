@@ -39,6 +39,20 @@ func_one = (one) -> 1
 <- func_one()
   console.log('test')
 
+# implicit parentheses for backcall function
+
+x <- func 1, _, 2
+  console.log('test')
+
+
+<- func_one()
+  console.log('test')
+
+  x <- func 1, _, 2
+    console.log('test')
+
+
+
 # implicit function call
 
 func()

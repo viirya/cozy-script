@@ -334,7 +334,11 @@ exports.Lexer = class Lexer
   literalToken: ->
     if match = OPERATOR.exec @chunk
       [value] = match
-      @tagParameters() if CODE.test value
+      if CODE.test value
+        @tagParameters()
+      if BACKCALL.test value
+        @tagParameters()
+        @tagBackcallParameters()
     else
       value = @chunk.charAt 0
     tag  = value
@@ -409,7 +413,28 @@ exports.Lexer = class Lexer
             return this
           else return this
     this
-
+  
+  # take care of open backcall function parameters 
+  tagBackcallParameters: ->
+    return this if @tag() not in PARAMETERABLE 
+    stack = []
+    {tokens} = this
+    @token 'PARAM_END', ')'
+    i = tokens.length - 1
+    while tok = tokens[--i]
+      switch tok[0]
+        when ')'
+          stack.push tok
+        when '(', 'CALL_START'
+          if stack.length then stack.pop()
+          else return this
+        when 'INDENT', 'OUTDENT', 'TERMINATOR'
+          if tok[0] in LINE_BREAK
+            @tokens.splice i + 1, 0, ['PARAM_START', '(', @line]
+            return this
+          else return this
+    this
+ 
   # Close up all remaining open blocks at the end of the file.
   closeIndentation: ->
     @outdentToken @indent
@@ -625,7 +650,8 @@ WHITESPACE = /^[^\n\S]+/
 
 COMMENT    = /^###([^#][\s\S]*?)(?:###[^\n\S]*|(?:###)?$)|^(?:\s*#(?!##[^#]).*)+/
 
-CODE       = /(^[-=]>|^<[-~])/
+CODE       = /^[-=]>/
+BACKCALL   = /^<[-~]/
 
 MULTI_DENT = /^(?:\n[^\n\S]*)+/
 
@@ -706,6 +732,8 @@ NOT_SPACED_REGEX = NOT_REGEX.concat ')', '}', 'THIS', 'IDENTIFIER', 'STRING'
 # of a function invocation or indexing operation.
 CALLABLE  = ['IDENTIFIER', 'STRING', 'REGEX', ')', ']', '}', '?', '::', '@', 'THIS', 'SUPER', '!']
 INDEXABLE = CALLABLE.concat 'NUMBER', 'BOOL', 'NULL', 'UNDEFINED'
+
+PARAMETERABLE = ['IDENTIFIER', 'STRING', 'REGEX', 'THIS', '@', 'SUPER', 'NUMBER', 'NULL', 'BOOL', 'UNDEFINED']
 
 # Tokens that, when immediately preceding a `WHEN`, indicate that the `WHEN`
 # occurs at the start of a line. We disambiguate these from trailing whens to
