@@ -122,11 +122,25 @@ such as LiveScript. Those features include backcall function, implicit function 
 
     eq(func_array()[0], 1);
 
+### Currying function
 
+-- CozyScript --
+
+    times = (x, y) --> x * y
     
+-- Compile to JavaScript --
+    
+    times = curry$(function(x, y) {
+      return x * y;
+    });
 
-
-
+    function curry$(f, args){     # Currying javascript codes from LiveScript
+      return f.length > 1 ? function(){
+        var params = args ? args.concat() : [];
+        return params.push.apply(params, arguments) < f.length && arguments.length ?
+        curry$.call(this, f, params) : f.apply(this, params);
+      } : f;
+    };
 
 
 
