@@ -90,6 +90,8 @@ grammar =
     o 'Invocation'
     o 'Code'
     o 'BackCallCode'
+    o 'Currying'
+    o 'CurryingHelper'
     o 'Operation'
     o 'Assign'
     o 'If'
@@ -182,6 +184,14 @@ grammar =
     o 'PARAM_START ParamList PARAM_END BackCallFuncGlyph Invocation Block', -> new BackCall $5, new Code($2, $6, $4) 
     o 'BackCallFuncGlyph Invocation Block',                                 -> new BackCall $2, new Code([], $3, $1)
   ]
+
+  Currying: [
+    o 'PARAM_START ParamList PARAM_END CurryGlyph Block', -> new Code $2, $5, $4, 'yes'
+  ]
+
+  CurryingHelper: [
+    o 'CURRYING',                               -> new Currying
+  ]
  
   # CoffeeScript has two different symbols for functions. `->` is for ordinary
   # functions, and `=>` is for functions bound to the current value of *this*.
@@ -195,6 +205,12 @@ grammar =
   BackCallFuncGlyph: [
     o '<-',                                     -> 'func'
     o '<~',                                     -> 'boundfunc'
+  ]
+
+  # Define two symbols for currying functions.
+  CurryGlyph: [
+    o '-->',                                     -> 'func'
+    o '~~>',                                     -> 'boundfunc'
   ]
  
   # An optional, trailing comma.

@@ -661,6 +661,27 @@ exports.BackCall = class BackCall extends Base
   compileSplat: (o, splatArgs) ->
     @call.compileSplat(o, splatArgs)  
  
+#### Currying
+
+# Node for a currying helper
+exports.Currying = class Currying extends Base
+  constructor: () ->
+
+  # Add currying helper
+  compileNode: (o) ->
+    code  = """
+            function curry$(f, args){
+              return f.length > 1 ? function(){
+                var params = args ? args.concat() : [];
+                return params.push.apply(params, arguments) < f.length && arguments.length ?
+                  curry$.call(this, f, params) : f.apply(this, params);
+              } : f;
+            }
+
+    """
+    return code
+
+ 
 #### Extends
 
 # Node to extend an object's prototype with an ancestor object.
@@ -1197,11 +1218,12 @@ exports.Assign = class Assign extends Base
 # When for the purposes of walking the contents of a function body, the Code
 # has no *children* -- they're within the inner scope.
 exports.Code = class Code extends Base
-  constructor: (params, body, tag) ->
+  constructor: (params, body, tag, currying) ->
     @params  = params or []
     @body    = body or new Block
     @bound   = tag is 'boundfunc'
     @context = '_this' if @bound
+    @currying = currying is 'yes' ? true : false
 
   children: ['params', 'body']
 
@@ -1263,6 +1285,9 @@ exports.Code = class Code extends Base
     code  += '(' + params.join(', ') + ') {'
     code  += "\n#{ @body.compileWithDeclarations o }\n#{@tab}" unless @body.isEmpty()
     code  += '}'
+
+    if @currying then code = "curry$(#{code})"
+
     return @tab + code if @ctor
     if @front or (o.level >= LEVEL_ACCESS) then "(#{code})" else code
 

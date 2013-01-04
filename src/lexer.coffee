@@ -635,6 +635,8 @@ HEREDOC    = /// ^ ("""|''') ([\s\S]*?) (?:\n[^\n\S]*)? \1 ///
 
 OPERATOR   = /// ^ (
   ?: [-=]>             # function
+   | -->               # currying
+   | ~~>               # bound currying
    | _                 # implict backcall argument
    | <[-~]             # backcall function
    | [-+*/%<>&|^!?=]=  # compound assign / compare
@@ -650,8 +652,9 @@ WHITESPACE = /^[^\n\S]+/
 
 COMMENT    = /^###([^#][\s\S]*?)(?:###[^\n\S]*|(?:###)?$)|^(?:\s*#(?!##[^#]).*)+/
 
-CODE       = /^[-=]>/
+CODE       = /^[-=]>|-->|~~>/
 BACKCALL   = /^<[-~]/
+CURRY      = /^-->|~~>/
 
 MULTI_DENT = /^(?:\n[^\n\S]*)+/
 

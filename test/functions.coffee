@@ -66,6 +66,16 @@ eq func_array()[0], 1
 eq func_array![0], 1
 
 
+# Currying functions
+
+test "currying functions", ->
+
+  times = (x, y) --> x * y
+  eq times(2, 3), 6
+  double = times 2
+  eq double(5), 10
+
+
 # Multiple nested function declarations mixed with implicit calls should not
 # cause a syntax error.
 (one) -> (two) -> three four, (five) -> six seven, eight, (nine) ->

@@ -26,6 +26,7 @@ class exports.Rewriter
     @tagPostfixConditionals()
     @addImplicitBraces()
     @addImplicitParentheses()
+    @addCurryingHelper()
     @tokens
 
   # Rewrite the token stream, looking one token ahead and behind.
@@ -147,6 +148,15 @@ class exports.Rewriter
       tokens.splice idx, 0, tok
       @detectEnd i + 2, condition, action
       2
+
+  addCurryingHelper: ->
+    @scanTokens (token, i, tokens) ->
+      tag = token[0]
+      if tag is '-->' then @currying = true
+      if i is tokens.length - 1 and @currying is true
+        tokens.push @generate 'CURRYING', '', token[2] + 1
+        return 2
+      1
 
   # Methods may be optionally called without parentheses, for simple cases.
   # Insert the implicit parentheses here, so that the parser doesn't have to
@@ -305,20 +315,20 @@ IMPLICIT_FUNC    = ['IDENTIFIER', 'SUPER', ')', 'CALL_END', ']', 'INDEX_END', '@
 IMPLICIT_CALL    = [
   'IDENTIFIER', 'NUMBER', 'STRING', 'JS', 'REGEX', 'NEW', 'PARAM_START', 'CLASS'
   'IF', 'TRY', 'SWITCH', 'THIS', 'BOOL', 'NULL', 'UNDEFINED', 'UNARY', 'SUPER'
-  '@', '->', '=>', '[', '(', '{', '--', '++', '!'
+  '@', '->', '=>', '[', '(', '{', '--', '++', '!', '-->', '~~>'
 ]
 
 IMPLICIT_UNSPACED_CALL = ['+', '-']
 
 # Tokens indicating that the implicit call must enclose a block of expressions.
-IMPLICIT_BLOCK   = ['->', '=>', '{', '[', ',']
+IMPLICIT_BLOCK   = ['->', '=>', '{', '[', ',', '-->', '~~>']
 
 # Tokens that always mark the end of an implicit call for single-liners.
 IMPLICIT_END     = ['POST_IF', 'FOR', 'WHILE', 'UNTIL', 'WHEN', 'BY', 'LOOP', 'TERMINATOR']
 
 # Single-line flavors of block expressions that have unclosed endings.
 # The grammar can't disambiguate them, so we insert the implicit indentation.
-SINGLE_LINERS    = ['ELSE', '->', '=>', 'TRY', 'FINALLY', 'THEN']
+SINGLE_LINERS    = ['ELSE', '->', '=>', 'TRY', 'FINALLY', 'THEN', '-->', '~~>']
 SINGLE_CLOSERS   = ['TERMINATOR', 'CATCH', 'FINALLY', 'ELSE', 'OUTDENT', 'LEADING_WHEN']
 
 # Tokens that end a line.
