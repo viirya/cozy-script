@@ -142,5 +142,33 @@ such as LiveScript. Those features include backcall function, implicit function 
       } : f;
     };
 
+### Partially applied function
+
+-- CozyScript --
+
+    filterNum = filter _, [1..5]
+    
+    filterNum (it) ->  # [4, 5]
+      it > 3
+
+-- Compile to JavaScript --
+    
+    filterNum = __partialize.apply(this, [filter, [void 0, [1, 2, 3, 4, 5]], [0]]);
+    
+    filterNum(function(it) {
+        return it > 3;
+    });
+
+    __partialize = function partialize$(f, args, where){  # particalize$() javascript codes from LiveScript
+      var context = this;
+      return function(){
+        var params = __slice.call(arguments), i,
+            len = params.length, wlen = where.length,
+            ta = args ? args.concat() : [], tw = where ? where.concat() : [];
+        for(i = 0; i < len; ++i) { ta[tw[0]] = params[i]; tw.shift(); }
+        return len < wlen && len ?
+          partialize$.apply(context, [f, ta, tw]) : f.apply(context, ta);
+      };
+    }
 
 
