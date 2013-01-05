@@ -335,7 +335,7 @@ exports.Literal = class Literal extends Base
   toString: ->
     ' "' + @value + '"'
 
-class exports.Undefined extends Base
+exports.Undefined = class Undefined extends Base
   isAssignable: NO
   isComplex: NO
   compileNode: (o) ->
@@ -559,6 +559,7 @@ exports.Call = class Call extends Base
       ifn = unfoldSoak o, call, 'variable'
     ifn
 
+  # Call by class BackCall to replace implict reference with backcall function
   filterImplicitBackCall: (backcall) ->
     nodes = []
     findIt = false
@@ -572,6 +573,22 @@ exports.Call = class Call extends Base
         nodes.push backcall
     @args = nodes
 
+  # Walk through the arguments to replace implicit references with Undefined for partial application 
+  filterImplicitArguments: (list) ->
+    @partial = false
+    nodes = []
+    @where = []
+    arg_index = 0
+    for node in list
+      if node instanceof Value and node.base instanceof Literal and node.base.value is '_'
+        nodes.push new Value new Undefined
+        @partial = true
+        @where.push arg_index
+      else  
+        nodes.push node
+      arg_index++
+    nodes
+ 
   # Walk through the objects in the arguments, moving over simple values.
   # This allows syntax like `call a: b, c` into `call({a: b}, c);`
   filterImplicitObjects: (list) ->
@@ -595,12 +612,25 @@ exports.Call = class Call extends Base
     @variable?.front = @front
     if code = Splat.compileSplattedArray o, @args, true
       return @compileSplat o, code
+
     args = @filterImplicitObjects @args
+    args = @filterImplicitArguments args
     args = (arg.compile o, LEVEL_LIST for arg in args).join ', '
-    if @isSuper
-      @superReference(o) + ".call(#{@superThis(o)}#{ args and ', ' + args })"
+    if @partial
+      where = @where.join ', '
+      utility('slice')
+      utility('partialize')
+      if @isSuper
+        args = "[#{@superThis(o)}, #{args}], [#{where}]"
+        "__partialize.apply(this, [#{@superReference(o)}.call, #{args}])"
+      else
+        args = "[#{args}], [#{where}]"
+        (if @isNew then 'new ' else '') + "__partialize.apply(this, [#{@variable.compile(o, LEVEL_ACCESS)}, #{args}])"
     else
-      (if @isNew then 'new ' else '') + @variable.compile(o, LEVEL_ACCESS) + "(#{args})"
+      if @isSuper
+        @superReference(o) + ".call(#{@superThis(o)}#{ args and ', ' + args })"
+      else
+        (if @isNew then 'new ' else '') + @variable.compile(o, LEVEL_ACCESS) + "(#{args})"
 
   # `super()` is converted into a call against the superclass's implementation
   # of the current function.
@@ -669,17 +699,8 @@ exports.Currying = class Currying extends Base
 
   # Add currying helper
   compileNode: (o) ->
-    code  = """
-            function curry$(f, args){
-              return f.length > 1 ? function(){
-                var params = args ? args.concat() : [];
-                return params.push.apply(params, arguments) < f.length && arguments.length ?
-                  curry$.call(this, f, params) : f.apply(this, params);
-              } : f;
-            }
-
-    """
-    return code
+    utility('currying')
+    ''
 
  
 #### Extends
@@ -1286,7 +1307,7 @@ exports.Code = class Code extends Base
     code  += "\n#{ @body.compileWithDeclarations o }\n#{@tab}" unless @body.isEmpty()
     code  += '}'
 
-    if @currying then code = "curry$(#{code})"
+    if @currying then code = "__currying(#{code})"
 
     return @tab + code if @ctor
     if @front or (o.level >= LEVEL_ACCESS) then "(#{code})" else code
@@ -2044,6 +2065,30 @@ UTILITIES =
   # Shortcuts to speed up the lookup time for native functions.
   hasProp: -> '{}.hasOwnProperty'
   slice  : -> '[].slice'
+
+  currying: -> """
+            function curry$(f, args){
+              return f.length > 1 ? function(){
+                var params = args ? args.concat() : [];
+                return params.push.apply(params, arguments) < f.length && arguments.length ?
+                  curry$.call(this, f, params) : f.apply(this, params);
+              } : f;
+            }
+  """
+
+  partialize: -> """
+            function partialize$(f, args, where){
+              var context = this;
+              return function(){
+                var params = __slice.call(arguments), i,
+                    len = params.length, wlen = where.length,
+                    ta = args ? args.concat() : [], tw = where ? where.concat() : [];
+                for(i = 0; i < len; ++i) { ta[tw[0]] = params[i]; tw.shift(); }
+                return len < wlen && len ?
+                  partialize$.apply(context, [f, ta, tw]) : f.apply(context, ta);
+              };
+            }
+  """
 
 # Levels indicate a node's position in the AST. Useful for knowing if
 # parens are necessary or superfluous.

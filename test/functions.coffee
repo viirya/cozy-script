@@ -75,6 +75,26 @@ test "currying functions", ->
   double = times 2
   eq double(5), 10
 
+filter = (cond, array) ->
+  (item for item in array when cond(item))
+
+test "partially applied functions", ->
+
+  (it) <- filter _, [1..5]
+    it > 3
+
+  filter (it) ->
+    it > 3
+  , [1..5]
+  
+  filterNum = filter _, [1..5]
+
+  result = filterNum (it) ->
+    it > 3
+
+  eq result[0], 4
+  eq result[1], 5
+  
 
 # Multiple nested function declarations mixed with implicit calls should not
 # cause a syntax error.
