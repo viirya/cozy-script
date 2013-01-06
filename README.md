@@ -1,9 +1,21 @@
 # CozyScript
 
-CozyScript is a fork of CoffeeScript. It currently adds some features from the descendants of CoffeeScript
-such as LiveScript. Those features include backcall function, implicit function call.
+CozyScript is a CoffeeScript fork and dialect.
 
-## Backcall examples
+This is an experimental project for implementing programming language. The popularity of CoffeeScript
+and its clear implementation make it a good start.
+
+CozyScript keeps all syntaxs of CoffeeScript but integrates and implements some useful language features
+from other CoffeeScript dialects such as LiveScript.
+
+## Differences to CoffeeScript
+
+* Backcall function
+* Implicit function call
+* Currying
+* Partially applied function
+
+## Backcall function
 
 -- CozyScript --
 
