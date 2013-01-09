@@ -95,6 +95,44 @@ test "partially applied functions", ->
   eq result[0], 4
   eq result[1], 5
   
+# Basic access/call function shorthand
+
+( +1)
+
+(-1)
+
+(+ 1)
+
+(1 -)
+
+(1-)
+
+(>1)
+
+(<1)
+
+(>1>2)
+
+( < 1 < 2)
+
+( + 1 * 2 / 3)
+
+(>>1)
+ 
+test "access/call shorthand", ->
+ 
+  result = filter (> 3), [1..5]
+  eq result[0], 4
+  eq result[1], 5
+
+  obj =
+    x: 1
+    y: 2
+
+  f = (input, cb) ->
+    cb(input)
+
+  eq (f obj, (.x)), 1 
 
 # Multiple nested function declarations mixed with implicit calls should not
 # cause a syntax error.

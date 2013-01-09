@@ -368,6 +368,17 @@ exports.Lexer = class Lexer
         tag = 'INDEX_START'
         switch prev[0]
           when '?'  then prev[0] = 'INDEX_SOAK'
+
+    # processing access/call function shorthand
+    shorthand_cond = (val) -> val in MATH or val in COMPARE or val in COMPOUND_ASSIGN or val in SHIFT or val in LOGIC or val in ['+', '-', '.']
+
+    shorthand_append = (append) =>   
+      if (shorthand_cond(value) and prev and prev[0] is '(') or (value is ')' and shorthand_cond(prev[0]))
+        append @tokens.length
+
+    (loc) <~ shorthand_append!
+      @tokens.splice loc, 0, ['SHORTHAND', '', @line]
+
     switch value
       when '(', '{', '[' then @ends.push INVERSES[value]
       when ')', '}', ']' then @pair value

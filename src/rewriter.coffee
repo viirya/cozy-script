@@ -27,6 +27,7 @@ class exports.Rewriter
     @addImplicitBraces()
     @addImplicitParentheses()
     @addCurryingHelper()
+    @addShorthand()
     @tokens
 
   # Rewrite the token stream, looking one token ahead and behind.
@@ -40,7 +41,7 @@ class exports.Rewriter
     i += block.call this, token, i, tokens while token = tokens[i]
     true
 
-  detectEnd: (i, condition, action) ->
+  detectAndAction: (i, condition, action, step) ->
     {tokens} = this
     levels = 0
     while token = tokens[i]
@@ -50,8 +51,16 @@ class exports.Rewriter
         levels += 1
       else if token[0] in EXPRESSION_END
         levels -= 1
-      i += 1
+      i += step
     i - 1
+
+  detectBegin: ->
+    f = @detectAndAction(_, _, _, -1)
+    f.apply(@, arguments)
+  detectEnd: ->
+    f = @detectAndAction(_, _, _, 1)
+    f.apply(@, arguments)
+
 
   # Leading newlines would introduce an ambiguity in the grammar, so we
   # dispatch them here.
@@ -149,6 +158,7 @@ class exports.Rewriter
       @detectEnd i + 2, condition, action
       2
 
+  # Insert helper for currying function
   addCurryingHelper: ->
     @scanTokens (token, i, tokens) ->
       tag = token[0]
@@ -157,6 +167,39 @@ class exports.Rewriter
         tokens.push @generate 'CURRYING', '', token[2] + 1
         return 2
       1
+
+  addShorthand: ->
+    insertShorthandBegin = (loc, token) =>
+      loc++
+      @tokens.splice loc++, 0, @generate 'PARAM_START', '(', token[2]
+      @tokens.splice loc++, 0, @generate 'IDENTIFIER', 'it', token[2]
+      @tokens.splice loc++, 0, @generate 'PARAM_END', ')', token[2]
+      @tokens.splice loc++, 0, @generate '->', '->', token[2]
+      @tokens.splice loc++, 0, @generate 'INDENT', '2', token[2]
+ 
+    insertShorthandEnd = (loc, token) =>
+      @tokens.splice loc++, 0, @generate 'OUTDENT', '2', token[2]
+ 
+    condition = (token, i, target) ->
+      [tag] = token
+      return yes if tag is target
+ 
+    action = (token, i, insert) ->
+      insert i, token
+ 
+    @scanTokens (token, i, tokens) ->
+      tag = token[0]
+      [prev, current, next] = tokens[i - 1 .. i + 1]
+
+      if tag is 'SHORTHAND'
+        if next[1] in ['+', '-'] and not next.spaced
+          tokens.splice i, 1
+          return 1
+        tokens.splice i, 1, @generate 'IDENTIFIER', 'it', token[2]
+        @detectEnd i + 1, condition(_, _, ')'), action(_, _, insertShorthandEnd) 
+        @detectBegin i - 1, condition(_, _, '('), action(_, _, insertShorthandBegin)
+      1  
+
 
   # Methods may be optionally called without parentheses, for simple cases.
   # Insert the implicit parentheses here, so that the parser doesn't have to
