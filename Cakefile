@@ -61,7 +61,6 @@ task 'install', 'install CozyScript into /usr/local (or --prefix)', (options) ->
     "mkdir -p #{lib} #{bin}"
     "cp -rf bin lib LICENSE README package.json src #{lib}"
     "ln -sfn #{lib}/bin/cozy #{bin}/cozy"
-    "ln -sfn #{lib}/bin/cake #{bin}/cake"
     "mkdir -p ~/.node_libraries"
     "ln -sfn #{lib}/lib/cozy-script #{node}"
   ].join(' && '), (err, stdout, stderr) ->
