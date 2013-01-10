@@ -16,11 +16,10 @@
   },
   "main" : "./lib/cozy-script/cozy-script",
   "bin":          {
-    "cozy":     "./bin/cozy",
-    "cake":       "./bin/cake"
+    "cozy":     "./bin/cozy"
   },
   "scripts": {
-    "test": "node ./bin/cake test"
+    "test": "node ./bin_coffee/cake test"
   },
   "homepage":     "https://github.com/viirya/cozy-script/blob/master/README.md",
   "bugs":         "https://github.com/viirya/cozy-script/issues",

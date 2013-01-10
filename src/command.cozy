@@ -25,9 +25,9 @@ hidden = (file) -> /^\.|~$/.test file
 
 # The help banner that is printed when `coffee` is called without arguments.
 BANNER = '''
-  Usage: coffee [options] path/to/script.coffee -- [args]
+  Usage: cozy [options] path/to/script.cozy -- [args]
 
-  If called without options, `coffee` will run your script.
+  If called without options, `cozy` will run your script.
 '''
 
 # The list of all the valid option flags that `coffee` knows how to handle.
@@ -75,7 +75,7 @@ exports.run = ->
   return require './repl'                unless sources.length
   literals = if opts.run then sources.splice 1 else []
   process.argv = process.argv[0..1].concat literals
-  process.argv[0] = 'coffee'
+  process.argv[0] = 'cozy'
   process.execPath = require.main.filename
   for source in sources
     compilePath source, yes, path.normalize source
@@ -87,8 +87,8 @@ compilePath = (source, topLevel, base) ->
   fs.stat source, (err, stats) ->
     throw err if err and err.code isnt 'ENOENT'
     if err?.code is 'ENOENT'
-      if topLevel and source[-7..] isnt '.coffee'
-        source = sources[sources.indexOf(source)] = "#{source}.coffee"
+      if topLevel and source[-7..] isnt '.cozy'
+        source = sources[sources.indexOf(source)] = "#{source}.cozy"
         return compilePath source, topLevel, base
       if topLevel
         console.error "File not found: #{source}"
@@ -105,7 +105,7 @@ compilePath = (source, topLevel, base) ->
         sourceCode[index..index] = files.map -> null
         files.forEach (file) ->
           compilePath (path.join source, file), no, base
-    else if topLevel or path.extname(source) is '.coffee'
+    else if topLevel or path.extname(source) is '.cozy'
       watch source, base if opts.watch
       fs.readFile source, (err, code) ->
         throw err if err and err.code isnt 'ENOENT'
@@ -338,4 +338,4 @@ usage = ->
 
 # Print the `--version` message and exit.
 version = ->
-  printLine "CoffeeScript version #{CoffeeScript.VERSION}"
+  printLine "CozyScript version #{CoffeeScript.VERSION}"
