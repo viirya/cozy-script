@@ -8,6 +8,22 @@ and its clear implementation make it a good start.
 CozyScript keeps all syntaxs of CoffeeScript but integrates and implements some useful language features
 from other CoffeeScript dialects such as LiveScript.
 
+## Install
+
+    npm install -g cozy-script
+    
+In order to prevent from the conflict with original `cake` installed by CoffeeScript, the installation
+does not install `cake`.
+    
+## Compile script
+
+    cozy -c /path/to/script.cozy
+
+## Run script 
+
+    cozy /path/to/script.cozy
+
+
 ## Differences to CoffeeScript
 
 * Backcall function
