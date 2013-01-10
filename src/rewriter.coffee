@@ -54,12 +54,13 @@ class exports.Rewriter
       i += step
     i - 1
 
+  # partially applied wrapper for detectAndAction that is used to find specific token
+  # and then perform given action
   detectBegin: ->
-    f = @detectAndAction(_, _, _, -1)
-    f.apply(@, arguments)
+    @detectAndAction(_, _, _, -1).apply(@, arguments)
+
   detectEnd: ->
-    f = @detectAndAction(_, _, _, 1)
-    f.apply(@, arguments)
+    @detectAndAction(_, _, _, 1).apply(@, arguments)
 
 
   # Leading newlines would introduce an ambiguity in the grammar, so we
