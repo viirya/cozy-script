@@ -1,7 +1,7 @@
 fs            = require 'fs'
 path          = require 'path'
-{extend}      = require './lib/cozy-script/helpers'
-CozyScript  = require './lib/cozy-script'
+{extend}      = require './lib/coffee-script/helpers'
+CoffeeScript  = require './lib/coffee-script'
 {spawn, exec} = require 'child_process'
 
 # ANSI Terminal Colors.
@@ -19,12 +19,9 @@ if enableColors
 # Built file header.
 header = """
   /**
-   * CozyScript Compiler v#{CozyScript.VERSION}
-   * https://github.com/viirya/coffee-script
+   * CoffeeScript Compiler v#{CoffeeScript.VERSION}
+   * http://coffeescript.org
    *
-   * Copyright 2012, Liang-Chi Hsieh
-   *
-   * Based on CoffeeScript
    * Copyright 2011, Jeremy Ashkenas
    * Released under the MIT License
    */
@@ -33,11 +30,11 @@ header = """
 sources = [
   'coffee-script', 'grammar', 'helpers'
   'lexer', 'nodes', 'rewriter', 'scope'
-].map (filename) -> "src/#{filename}.cozy"
+].map (filename) -> "src/#{filename}.coffee"
 
-# Run a CozyScript through our node/cozy interpreter.
+# Run a CoffeeScript through our node/coffee interpreter.
 run = (args, cb) ->
-  proc =         spawn 'node', ['bin/cozy'].concat(args)
+  proc =         spawn 'node', ['bin/coffee'].concat(args)
   proc.stderr.on 'data', (buffer) -> console.log buffer.toString()
   proc.on        'exit', (status) ->
     process.exit(1) if status != 0
@@ -49,36 +46,36 @@ log = (message, color, explanation) ->
 
 option '-p', '--prefix [DIR]', 'set the installation prefix for `cake install`'
 
-task 'install', 'install CozyScript into /usr/local (or --prefix)', (options) ->
+task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) ->
   base = options.prefix or '/usr/local'
-  lib  = "#{base}/lib/cozy-script"
+  lib  = "#{base}/lib/coffee-script"
   bin  = "#{base}/bin"
-  node = "~/.node_libraries/cozy-script"
-  console.log   "Installing CozyScript to #{lib}"
+  node = "~/.node_libraries/coffee-script"
+  console.log   "Installing CoffeeScript to #{lib}"
   console.log   "Linking to #{node}"
-  console.log   "Linking 'cozy' to #{bin}/cozy"
+  console.log   "Linking 'coffee' to #{bin}/coffee"
   exec([
     "mkdir -p #{lib} #{bin}"
     "cp -rf bin lib LICENSE README package.json src #{lib}"
-    "ln -sfn #{lib}/bin/cozy #{bin}/cozy"
+    "ln -sfn #{lib}/bin/coffee #{bin}/coffee"
     "ln -sfn #{lib}/bin/cake #{bin}/cake"
     "mkdir -p ~/.node_libraries"
-    "ln -sfn #{lib}/lib/cozy-script #{node}"
+    "ln -sfn #{lib}/lib/coffee-script #{node}"
   ].join(' && '), (err, stdout, stderr) ->
     if err then console.log stderr.trim() else log 'done', green
   )
 
 
-task 'build', 'build the CozyScript language from source', build = (cb) ->
+task 'build', 'build the CoffeeScript language from source', build = (cb) ->
   files = fs.readdirSync 'src'
-  files = ('src/' + file for file in files when file.match(/\.cozy$/))
-  run ['-c', '-o', 'lib/cozy-script'].concat(files), cb
+  files = ('src/' + file for file in files when file.match(/\.coffee$/))
+  run ['-c', '-o', 'lib/coffee-script'].concat(files), cb
 
 
 task 'build:full', 'rebuild the source twice, and run the tests', ->
   build ->
     build ->
-      csPath = './lib/cozy-script'
+      csPath = './lib/coffee-script'
       delete require.cache[require.resolve csPath]
       unless runTests require csPath
         process.exit 1
@@ -87,14 +84,14 @@ task 'build:full', 'rebuild the source twice, and run the tests', ->
 task 'build:parser', 'rebuild the Jison parser (run build first)', ->
   extend global, require('util')
   require 'jison'
-  parser = require('./lib/cozy-script/grammar').parser
-  fs.writeFile 'lib/cozy-script/parser.js', parser.generate()
+  parser = require('./lib/coffee-script/grammar').parser
+  fs.writeFile 'lib/coffee-script/parser.js', parser.generate()
 
 
 task 'build:ultraviolet', 'build and install the Ultraviolet syntax highlighter', ->
-  exec 'plist2syntax ../cozy-script-tmbundle/Syntaxes/CozyScript.tmLanguage', (err) ->
+  exec 'plist2syntax ../coffee-script-tmbundle/Syntaxes/CoffeeScript.tmLanguage', (err) ->
     throw err if err
-    exec 'sudo mv cozyscript.yaml /usr/local/lib/ruby/gems/1.8/gems/ultraviolet-0.10.2/syntax/cozyscript.syntax'
+    exec 'sudo mv coffeescript.yaml /usr/local/lib/ruby/gems/1.8/gems/ultraviolet-0.10.2/syntax/coffeescript.syntax'
 
 
 task 'build:browser', 'rebuild the merged script for inclusion in the browser', ->
@@ -103,27 +100,27 @@ task 'build:browser', 'rebuild the merged script for inclusion in the browser', 
     code += """
       require['./#{name}'] = new function() {
         var exports = this;
-        #{fs.readFileSync "lib/cozy-script/#{name}.js"}
+        #{fs.readFileSync "lib/coffee-script/#{name}.js"}
       };
     """
   code = """
     (function(root) {
-      var CozyScript = function() {
+      var CoffeeScript = function() {
         function require(path){ return require[path]; }
         #{code}
         return require['./coffee-script'];
       }();
 
       if (typeof define === 'function' && define.amd) {
-        define(function() { return CozyScript; });
+        define(function() { return CoffeeScript; });
       } else {
-        root.CozyScript = CozyScript;
+        root.CoffeeScript = CoffeeScript;
       }
     }(this));
   """
   unless process.env.MINIFY is 'false'
     {code} = require('uglify-js').minify code, fromString: true
-  fs.writeFileSync 'extras/cozy-script.js', header + '\n' + code
+  fs.writeFileSync 'extras/coffee-script.js', header + '\n' + code
   console.log "built ... running browser tests:"
   invoke 'test:browser'
 
@@ -134,38 +131,38 @@ task 'doc:site', 'watch and continually rebuild the documentation for the websit
 
 
 task 'doc:source', 'rebuild the internal documentation', ->
-  exec 'docco src/*.cozy && cp -rf docs documentation && rm -r docs', (err) ->
+  exec 'docco src/*.coffee && cp -rf docs documentation && rm -r docs', (err) ->
     throw err if err
 
 
-task 'doc:underscore', 'rebuild the Underscore.cozy documentation page', ->
-  exec 'docco examples/underscore.cozy && cp -rf docs documentation && rm -r docs', (err) ->
+task 'doc:underscore', 'rebuild the Underscore.coffee documentation page', ->
+  exec 'docco examples/underscore.coffee && cp -rf docs documentation && rm -r docs', (err) ->
     throw err if err
 
 task 'bench', 'quick benchmark of compilation time', ->
-  {Rewriter} = require './lib/cozy-script/rewriter'
+  {Rewriter} = require './lib/coffee-script/rewriter'
   co     = sources.map((name) -> fs.readFileSync name).join '\n'
   fmt    = (ms) -> " #{bold}#{ "   #{ms}".slice -4 }#{reset} ms"
   total  = 0
   now    = Date.now()
   time   = -> total += ms = -(now - now = Date.now()); fmt ms
-  tokens = CozyScript.tokens co, rewrite: false
+  tokens = CoffeeScript.tokens co, rewrite: false
   console.log "Lex    #{time()} (#{tokens.length} tokens)"
   tokens = new Rewriter().rewrite tokens
   console.log "Rewrite#{time()} (#{tokens.length} tokens)"
-  nodes  = CozyScript.nodes tokens
+  nodes  = CoffeeScript.nodes tokens
   console.log "Parse  #{time()}"
   js     = nodes.compile bare: true
   console.log "Compile#{time()} (#{js.length} chars)"
   console.log "total  #{ fmt total }"
 
-task 'loc', 'count the lines of source code in the CozyScript compiler', ->
+task 'loc', 'count the lines of source code in the CoffeeScript compiler', ->
   exec "cat #{ sources.join(' ') } | grep -v '^\\( *#\\|\\s*$\\)' | wc -l | tr -s ' '", (err, stdout) ->
     console.log stdout.trim()
 
 
-# Run the CozyScript test suite.
-runTests = (CozyScript) ->
+# Run the CoffeeScript test suite.
+runTests = (CoffeeScript) ->
   startTime   = Date.now()
   currentFile = null
   passedTests = 0
@@ -174,7 +171,7 @@ runTests = (CozyScript) ->
   global[name] = func for name, func of require 'assert'
 
   # Convenience aliases.
-  global.CozyScript = CozyScript
+  global.CoffeeScript = CoffeeScript
 
   # Our test helper function for delimiting different test cases.
   global.test = (description, fn) ->
@@ -214,7 +211,7 @@ runTests = (CozyScript) ->
     log "failed #{failures.length} and #{message}", red
     for fail in failures
       {error, filename}  = fail
-      jsFilename         = filename.replace(/\.cozy$/,'.js')
+      jsFilename         = filename.replace(/\.coffee$/,'.js')
       match              = error.stack?.match(new RegExp(fail.file+":(\\d+):(\\d+)"))
       match              = error.stack?.match(/on line (\d+):/) unless match
       [match, line, col] = match if match
@@ -227,23 +224,23 @@ runTests = (CozyScript) ->
 
   # Run every test in the `test` folder, recording failures.
   files = fs.readdirSync 'test'
-  for file in files when file.match /\.cozy$/i
+  for file in files when file.match /\.coffee$/i
     currentFile = filename = path.join 'test', file
     code = fs.readFileSync filename
     try
-      CozyScript.run code.toString(), {filename}
+      CoffeeScript.run code.toString(), {filename}
     catch error
       failures.push {filename, error}
   return !failures.length
 
 
-task 'test', 'run the CozyScript language test suite', ->
-  runTests CozyScript
+task 'test', 'run the CoffeeScript language test suite', ->
+  runTests CoffeeScript
 
 
 task 'test:browser', 'run the test suite against the merged browser script', ->
-  source = fs.readFileSync 'extras/cozy-script.js', 'utf-8'
+  source = fs.readFileSync 'extras/coffee-script.js', 'utf-8'
   result = {}
   global.testingBrowser = yes
   (-> eval source).call result
-  runTests result.CozyScript
+  runTests result.CoffeeScript

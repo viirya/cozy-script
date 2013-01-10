@@ -1,32 +1,32 @@
 {
-  "name":         "coffee-script",
-  "description":  "Unfancy JavaScript",
-  "keywords":     ["javascript", "language", "coffeescript", "compiler"],
-  "author":       "Jeremy Ashkenas",
-  "version":      "1.4.0",
+  "name":         "cozy-script",
+  "description":  "JavaScript for cozy coding",
+  "keywords":     ["javascript", "language", "cozyscript", "compiler"],
+  "author":       "Liang-Chi Hsieh",
+  "version":      "0.1.1",
   "licenses":     [{
     "type":       "MIT",
-    "url":        "https://raw.github.com/jashkenas/coffee-script/master/LICENSE"
+    "url":        "https://raw.github.com/viirya/cozy-script/master/LICENSE"
   }],
   "engines":      {
     "node":       ">=0.4.0"
   },
   "directories" : {
-    "lib" : "./lib/coffee-script"
+    "lib" : "./lib/cozy-script"
   },
-  "main" : "./lib/coffee-script/coffee-script",
+  "main" : "./lib/cozy-script/cozy-script",
   "bin":          {
-    "coffee":     "./bin/coffee",
+    "cozy":     "./bin/cozy",
     "cake":       "./bin/cake"
   },
   "scripts": {
     "test": "node ./bin/cake test"
   },
-  "homepage":     "http://coffeescript.org",
-  "bugs":         "https://github.com/jashkenas/coffee-script/issues",
+  "homepage":     "https://github.com/viirya/cozy-script/blob/master/README.md",
+  "bugs":         "https://github.com/viirya/cozy-script/issues",
   "repository":   {
     "type": "git",
-    "url": "git://github.com/jashkenas/coffee-script.git"
+    "url": "git://github.com/viirya/cozy-script.git"
   },
   "devDependencies": {
     "uglify-js":  "~2.2",

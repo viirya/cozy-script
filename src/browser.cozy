@@ -34,16 +34,16 @@ CoffeeScript.load = (url, callback) ->
   xhr.send null
 
 # Activate CoffeeScript in the browser by having it compile and evaluate
-# all script tags with a content-type of `text/coffeescript`.
+# all script tags with a content-type of `text/cozyscript`.
 # This happens on page load.
 runScripts = ->
   scripts = document.getElementsByTagName 'script'
-  coffees = (s for s in scripts when s.type is 'text/coffeescript')
+  cozys = (s for s in scripts when s.type is 'text/cozyscript')
   index = 0
-  length = coffees.length
+  length = cozys.length
   do execute = ->
-    script = coffees[index++]
-    if script?.type is 'text/coffeescript'
+    script = cozys[index++]
+    if script?.type is 'text/cozyscript'
       if script.src
         CoffeeScript.load script.src, execute
       else
