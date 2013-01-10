@@ -14,6 +14,24 @@ from other CoffeeScript dialects such as LiveScript.
 * Implicit function call
 * Currying
 * Partially applied function
+* Access/Call shorthand
+
+    Introducing access/call shorthand syntax causes two CoffeeScript tests to fail (in test/operators.coffee).
+    Failed tests are:
+
+        test "multiple operators should space themselves", ->
+          eq (+ +1), (- -1)
+      
+        test "#1703, ---x is invalid JS", ->
+          x = 2
+          eq (- --x), -1
+      
+    That is because CoffeeScript allows unary '+' and '-' to precede expression with space (e.g., + 1).
+    Allowing spaces following those operators confuses an access/call shorthand with an unary operator usage
+    for the case such as (+ +1). In CoffeeScript, the first '+' would be recognized as unary '+' for
+    next expression +1. But for the syntax of access/call shorthand, it would be a binary operator '+'
+    without left operand. To solve this confusion, by introducing access/call shorthand syntax, it is
+    not allowd that unary '+' and '-' to precede expression with space.
 
 ## Backcall function
 
@@ -182,5 +200,114 @@ from other CoffeeScript dialects such as LiveScript.
           partialize$.apply(context, [f, ta, tw]) : f.apply(context, ta);
       };
     }
+
+### Access/Call shorthand
+
+-- CozyScript --
+
+    ( +1)
+
+    (+ 1)
+
+    (1 -)
+
+    (1-)
+
+    (>1)
+
+    (<1)
+
+    (> 1 > 2)
+
+    (.x)
+    
+    (++x)
+
+    (+ +1)
+    (- -1)
+
+    (- --x)
+
+    obj =
+      x: 1
+      y: 2
+
+    f = (input, cb) ->
+      cb(input)
+
+    f obj, (.x)
+
+    filter (> 3), [1..5]  # [4, 5]
+
+
+-- Compile to JavaScript --
+
+  
+    +1;
+
+    (function(it) {
+      return it + 1;
+    });
+
+    (function(it) {
+      return 1 - it;
+    });
+
+    (function(it) {
+      return 1 - it;
+    });
+
+    (function(it) {
+      return it > 1;
+    });
+
+    (function(it) {
+      return it < 1;
+    });
+
+    (function(it) {
+      return (it > 1 && 1 > 2);
+    });
+
+    (function(it) {
+      return it.x;
+    });
+    
+    ++x;
+
+    (function(it) {
+      return it + +1;
+    });
+
+    (function(it) {
+      return it - -1;
+    });
+
+    (function(it) {
+      return it - --x;
+    });    
+
+    obj = {
+      x: 1,
+      y: 2
+    };
+
+    f = function(input, cb) {
+      return console.log(cb(input));
+    };
+
+    f(obj, (function(it) {
+      return it.x;
+    }));
+
+
+    filter((function(it) {
+      return it > 3;
+    }), [1, 2, 3, 4, 5]);
+
+
+
+
+
 
 
