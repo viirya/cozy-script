@@ -15,7 +15,7 @@ sudo bin/cake install
 
 Or via npm:
 
-npm install -g coffee-script
+npm install -g cozy-script
 
 Compile and execute script:
 
