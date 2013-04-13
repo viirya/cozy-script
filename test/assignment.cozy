@@ -365,3 +365,14 @@ test '#2213: invocations within destructured parameters', ->
   throws -> CozyScript.compile '({a()})->'
   throws -> CozyScript.compile '({a:b()})->'
   throws -> CozyScript.compile '({a:b.c()})->'
+
+test '#2532: compound assignment with terminator', ->
+  doesNotThrow -> CozyScript.compile """
+  a = "hello"
+  a +=
+  "
+  world
+  !
+  "
+  """
+
