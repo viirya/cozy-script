@@ -94,7 +94,7 @@ compilePath = (source, topLevel, base) ->
         console.error "File not found: #{source}"
         process.exit 1
       return
-    if stats.isDirectory()
+    if stats.isDirectory() and path.dirname(source) isnt 'node_modules'
       watchDir source, base if opts.watch
       fs.readdir source, (err, files) ->
         throw err if err and err.code isnt 'ENOENT'
@@ -141,7 +141,9 @@ compileScript = (file, input, base) ->
     CoffeeScript.emit 'failure', err, task
     return if CoffeeScript.listeners('failure').length
     return printLine err.message + '\x07' if o.watch
-    printWarn err instanceof Error and err.stack or "ERROR: #{err}"
+    #printWarn err instanceof Error and err.stack or "ERROR: #{err}"
+    message = helpers.prettyErrorMessage err, file or '[stdin]'
+    printWarn message
     process.exit 1
 
 # Attach the appropriate listeners to compile scripts incoming over **stdin**,

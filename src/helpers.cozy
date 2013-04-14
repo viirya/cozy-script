@@ -59,3 +59,11 @@ exports.last = (array, back) -> array[array.length - (back or 0) - 1]
 exports.some = Array::some ? (fn) ->
   return true for e in this when fn e
   false
+
+# Generate error message
+exports.prettyErrorMessage = (error, fileName) ->
+  message = """
+  #{fileName}: error: #{error.message}
+  """
+  message
+
