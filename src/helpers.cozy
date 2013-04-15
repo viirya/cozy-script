@@ -67,3 +67,22 @@ exports.prettyErrorMessage = (error, fileName) ->
   """
   message
 
+exports.repl = (opts = {}) ->
+  [major, minor, build] = process.versions.node.split('.').map (n) -> parseInt(n)
+  
+  if major is 0 and minor < 8
+    console.warn "Node 0.8.0+ required for CozyScript REPL"
+    readline = require('readline')
+    rl = readline.createInterface(
+      input: process.stdin,
+      output: process.stdout
+    )
+    (ans) <- rl.question("Do you want to run legacy REPL (y/n)?", _)
+      rl.close!
+      if (ans is 'y' or ans is 'Y')
+        return require './repl_legacy'
+      else
+        process.exit 1
+  else
+    return require('./repl').start(opts)      
+  
